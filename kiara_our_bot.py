@@ -14,7 +14,7 @@ def send_welcome(message):
 def send_h(message):
     bot.reply_to(message, "Я знаю две команды не полных!")
 
-
-if __name__ == "__main__":
-    print("Bot is running!")
-    bot.polling()
+#
+# if __name__ == "__main__":
+#     print("Bot is running!")
+#     bot.polling()
