@@ -4,10 +4,11 @@ import os
 
 import telebot
 from telebot import types
-from keyboard import KeyboardBot, Commands
+from keyboards import KeyboardBot
+from data_bot import Commands
 
 
-bot = telebot.TeleBot(os.environ["TOKEN_KIARA_BOT"])
+bot = telebot.TeleBot(os.environ["TOKEN_KIARA_BOT"], skip_pending=True)
 
 
 @bot.message_handler(commands=["start"])
@@ -30,7 +31,7 @@ def send_welcome(message):
 
 @bot.message_handler(func=lambda message: True, content_types=["text"])
 def choosing_actions(message):
-    if message.text == Commands.BYE_BOT:
+    if message.text == Commands.EXIT:
         bot.send_message(
             message.chat.id,
             "Я ушёл...",
