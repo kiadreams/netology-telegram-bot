@@ -1,48 +1,55 @@
 """Модуль формирующий интерфейс телеграм-бота."""
 
-from enum import StrEnum
-
-from telebot import types
-from data_bot import Commands
+from data import Commands
+from telebot.types import KeyboardButton, ReplyKeyboardMarkup
 
 
-# def get_buttons(*args) -> list[types.KeyboardButton]:
-#     """Функция получения кнопок.
-#
-#     На вход принимает список названий кнопок
-#     :param args: список названий кнопок
-#     :return:
-#     """
-#     return [types.KeyboardButton(text) for text in args]
-
-
-
-
-class KeyboardBot:
-    """Класс описывающий клавиатуру телеграмм бота."""
+class BaseKeyboard:
+    """Базовый класс всех клавиатур клавиатуру телеграмм бота."""
 
     def __init__(self, row_width=2):
-        """Инициализация класса KeyboardBot."""
-        self._kb = types.ReplyKeyboardMarkup(
-            row_width=row_width,
-            resize_keyboard=True,
-        )
+        """Инициализация базового класса Keyboard."""
+        self.keyboard = row_width
 
     @property
-    def kb(self):
+    def keyboard(self):
         """Возвращает клавиатуру.
 
         :return:
         """
         return self._kb
 
-    def load_btn_for_start_kb(self):
-        start_buttons = get_buttons(Commands.START_LEARNING, Commands.EXIT)
-        self._kb.add(*start_buttons)
+    @keyboard.setter
+    def keyboard(self, row_width):
+        self._kb = ReplyKeyboardMarkup(
+            row_width=row_width,
+            resize_keyboard=True,
+        )
 
-    def load_btn_for_learning_kb(self):
-        btn_next_word = types.KeyboardButton(Commands.NEXT)
-        btn_add_word = types.KeyboardButton(Commands.ADD_WORD)
-        btn_delete_word = types.KeyboardButton(Commands.DELETE_WORD)
-        btn_
-        self._kb.add(*learning_buttons)
+
+class StartKeyboard(BaseKeyboard):
+    """Класс описывающий стартовую клавиатуру бота."""
+
+    def __init__(self):
+        """Инициализация класса KeyboardBot."""
+        super().__init__(row_width=1)
+        self.keyboard.add(
+            KeyboardButton(Commands.START_LEARNING),
+            KeyboardButton(Commands.EXIT),
+        )
+
+
+class WordsKeyboard(BaseKeyboard):
+
+    def __init__(self, words):
+        """Инициализация класса KeyboardBot."""
+        super().__init__(row_width=2)
+        self._add_words_to_kb(words)
+
+    def _add_words_to_kb(self, words: list[str]):
+        word_buttons = [KeyboardButton(word) for word in words]
+        self.keyboard.add(word_buttons).row(
+            KeyboardButton(Commands.DELETE_WORD),
+            KeyboardButton(Commands.ADD_WORD),
+            KeyboardButton(Commands.NEXT),
+        ).add(KeyboardButton(Commands.MAIN_MENU))
