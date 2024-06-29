@@ -1,7 +1,12 @@
 """Модуль формирующий интерфейс телеграм-бота."""
 
-from data import Commands
+from data import Buttons
 from telebot.types import KeyboardButton, ReplyKeyboardMarkup
+from telebot.types import ReplyKeyboardRemove
+
+
+# def delete_keyboard():
+#     return ReplyKeyboardRemove()
 
 
 class BaseKeyboard:
@@ -19,6 +24,10 @@ class BaseKeyboard:
         """
         return self._kb
 
+    @staticmethod
+    def delete_keyboard():
+        return ReplyKeyboardRemove()
+
     @keyboard.setter
     def keyboard(self, row_width):
         self._kb = ReplyKeyboardMarkup(
@@ -34,22 +43,22 @@ class StartKeyboard(BaseKeyboard):
         """Инициализация класса KeyboardBot."""
         super().__init__(row_width=1)
         self.keyboard.add(
-            KeyboardButton(Commands.START_LEARNING),
-            KeyboardButton(Commands.EXIT),
+            KeyboardButton(Buttons.START_LEARNING),
+            KeyboardButton(Buttons.FINISH_BOT_CHAT),
         )
 
 
 class WordsKeyboard(BaseKeyboard):
 
-    def __init__(self, words):
+    def __init__(self, words: list[str]):
         """Инициализация класса KeyboardBot."""
         super().__init__(row_width=2)
         self._add_words_to_kb(words)
 
     def _add_words_to_kb(self, words: list[str]):
         word_buttons = [KeyboardButton(word) for word in words]
-        self.keyboard.add(word_buttons).row(
-            KeyboardButton(Commands.DELETE_WORD),
-            KeyboardButton(Commands.ADD_WORD),
-            KeyboardButton(Commands.NEXT),
-        ).add(KeyboardButton(Commands.MAIN_MENU))
+        self.keyboard.add(*word_buttons).row(
+            KeyboardButton(Buttons.DELETE_WORD),
+            KeyboardButton(Buttons.ADD_WORD),
+            KeyboardButton(Buttons.NEXT),
+        ).add(KeyboardButton(Buttons.MAIN_MENU))
