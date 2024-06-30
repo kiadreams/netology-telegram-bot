@@ -1,11 +1,12 @@
+from telebot import TeleBot
 from telebot.handler_backends import State, StatesGroup
 
 import keyboards
 from data import Buttons, Commands
+from dictionary import Dictionary
 
 
-
-class BotStates(StatesGroup):
+class UserStates(StatesGroup):
     target_word = State()
     translate_word = State()
     other_words = State()
@@ -102,11 +103,13 @@ class ButtonHandler(Actions, MainMenuActionsMixin, WordMenuActionsMixin):
 
 class BotModel(CommandHandler, ButtonHandler):
 
-    def __init__(self, bot, chats: dict):
+    def __init__(self, bot: TeleBot, chats: dict, user_id):
         """Класс описывающий логику бота."""
         Actions.__init__(self)
         CommandHandler.__init__(self)
         ButtonHandler.__init__(self)
+        self.user_id = user_id
+        self.dictionary = Dictionary(self.user_id, self)
         self.bot = bot
         self.name = bot.get_my_name().name
         self.chats = chats
@@ -131,13 +134,18 @@ class BotModel(CommandHandler, ButtonHandler):
         self.add_actions(self.cmd_actions)
 
     def btn_start_english_learning(self, message):
-        english_word = "end"
-        self.bot.send_message(
-            message.chat.id,
-            f"Выберите перевод слова: {english_word}",
-            reply_markup=keyboards.WordsKeyboard([english_word]).keyboard,
-        )
         self.actions = self.english_word_menu_actions
+        self.dictionary.show_curr_word(message)
+        # word = self.dictionary.curr_word
+        # self.bot.send_message(
+        #     message.chat.id,
+        #     f"Укажите перевод слова: {word.target_word}",
+        #     reply_markup=keyboards.WordsKeyboard(word.words).keyboard,
+        # )
+        # self.actions = self.english_word_menu_actions
+        # self.add_actions(self.dictionary.word_actions)
+
+    # def correct_
 
     def exit_from_bot(self, message):
         name = message.from_user.first_name
