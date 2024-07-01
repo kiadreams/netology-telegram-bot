@@ -1,3 +1,4 @@
+import random
 from enum import StrEnum
 
 
@@ -22,6 +23,22 @@ class Commands(StrEnum):
     @staticmethod
     def all_commands() -> list[str]:
         return [elem.value for elem in Commands]
+
+
+class Word:
+
+    def __init__(self, target_word: str, translate_word: str, *args) -> None:
+        self.target_word = target_word
+        self.translate_word = translate_word
+        self.other_words = args
+        self.correct_answers = 0
+        self.wrong_answers = 0
+
+    @property
+    def words(self):
+        word = [self.translate_word, *self.other_words]
+        random.shuffle(word)
+        return word
 
 
 if __name__ == "__main__":

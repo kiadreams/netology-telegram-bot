@@ -18,10 +18,6 @@ class BaseKeyboard:
         """
         return self._kb
 
-    @staticmethod
-    def delete_keyboard():
-        return types.ReplyKeyboardRemove()
-
     @keyboard.setter
     def keyboard(self, row_width):
         self._kb = types.ReplyKeyboardMarkup(
@@ -29,9 +25,13 @@ class BaseKeyboard:
             resize_keyboard=True,
         )
 
+    @staticmethod
+    def delete_keyboard():
+        return types.ReplyKeyboardRemove()
 
-class StartKeyboard(BaseKeyboard):
-    """Класс описывающий стартовую клавиатуру бота."""
+
+class MainMenuKeyboard(BaseKeyboard):
+    """Класс описывающий клавиатуру главного меню бота."""
 
     def __init__(self):
         """Инициализация класса KeyboardBot."""
@@ -42,17 +42,18 @@ class StartKeyboard(BaseKeyboard):
         )
 
 
-class WordsKeyboard(BaseKeyboard):
+class DictionaryKeyboard(BaseKeyboard):
 
-    def __init__(self, words: list[str]):
+    def __init__(self):
         """Инициализация класса KeyboardBot."""
         super().__init__(row_width=2)
-        self._add_words_to_kb(words)
 
-    def _add_words_to_kb(self, words: list[str]):
+    def add_words_to_kb(self, words: list[str]):
         word_buttons = [types.KeyboardButton(word) for word in words]
-        self.keyboard.add(*word_buttons).row(
-            types.KeyboardButton(Buttons.DELETE_WORD),
-            types.KeyboardButton(Buttons.ADD_WORD),
-            types. KeyboardButton(Buttons.NEXT),
-        ).add(types.KeyboardButton(Buttons.MAIN_MENU))
+        return (
+            self.keyboard.add(*word_buttons).row(
+                types.KeyboardButton(Buttons.DELETE_WORD),
+                types.KeyboardButton(Buttons.ADD_WORD),
+                types.KeyboardButton(Buttons.NEXT),
+            ).add(types.KeyboardButton(Buttons.MAIN_MENU))
+        )
