@@ -109,7 +109,7 @@ class BotModel(CommandHandler, ButtonHandler):
         CommandHandler.__init__(self)
         ButtonHandler.__init__(self)
         self.user_id = user_id
-        self.dictionary = Dictionary(self.user_id, self)
+        self.dictionary = Dictionary(self, user_id)
         self.bot = bot
         self.name = bot.get_my_name().name
         self.chats = chats
@@ -136,16 +136,6 @@ class BotModel(CommandHandler, ButtonHandler):
     def btn_start_english_learning(self, message):
         self.actions = self.english_word_menu_actions
         self.dictionary.show_curr_word(message)
-        # word = self.dictionary.curr_word
-        # self.bot.send_message(
-        #     message.chat.id,
-        #     f"Укажите перевод слова: {word.target_word}",
-        #     reply_markup=keyboards.WordsKeyboard(word.words).keyboard,
-        # )
-        # self.actions = self.english_word_menu_actions
-        # self.add_actions(self.dictionary.word_actions)
-
-    # def correct_
 
     def exit_from_bot(self, message):
         name = message.from_user.first_name

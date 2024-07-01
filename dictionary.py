@@ -1,6 +1,8 @@
 import random
 
-from model import BotModel
+# from model import BotModel
+from keyboards import WordsKeyboard
+
 
 class Word:
 
@@ -20,16 +22,17 @@ class Word:
 
 class Dictionary:
 
-    def __init__(self, model: BotModel, user_id):
+    def __init__(self, model, user_id: int):
         self.model = model
         self.user_id = user_id
         self.next_word_index = 0
+
         self.words = [
             Word("сумка", "bag", "backpack", "dog", "cat"),
             Word("собака", "dog", "gosh", "bog", "cat"),
             Word("кошка", "cat", "cut", "cot", "cattle"),
         ]
-        self.curr_word = self.next_word
+        self.curr_word: Word | None = self.next_word
 
     @property
     def next_word(self) -> Word | None:
@@ -42,49 +45,51 @@ class Dictionary:
             return word
         return None
 
-    @property
-    def word_actions(self):
-        return {
-            self.curr_word.target_word: self.action_correct_answer,
-            self.curr_word.other_words[0]: self.action_wrong_answer,
-            self.curr_word.other_words[1]: self.action_wrong_answer,
-            self.curr_word.other_words[2]: self.action_wrong_answer,
-        }
-
     def show_curr_word(self, message):
-        self.model.bot.send_message(
-            message.chat.id,
-            f"Укажите перевод слова: {self.curr_word.target_word}",
-            reply_markup=keyboards.WordsKeyboard(self.curr_word.words).keyboard,
-        )
+        if self.curr_word is not None:
+            self.model.bot.send_message(
+                message.chat.id,
+                f"Переведите на английский слово: {self.curr_word.target_word}",
+                reply_markup=WordsKeyboard(self.curr_word.words).keyboard,
+            )
+            self.model.actions = self.model.english_word_menu_actions
+            self.model.add_actions(self.word_actions)
+        else:
+            self.model.bot.send_message(
+                message.chat.id,
+                "К сожалению в словаре нет слов для изучения...",
+                reply_markup=WordsKeyboard([]).keyboard,
+            )
+
+    @property
+    def word_actions(self) -> dict:
+        if self.curr_word is not None:
+            return {
+                self.curr_word.translate_word: self.action_correct_answer,
+                self.curr_word.other_words[0]: self.action_wrong_answer,
+                self.curr_word.other_words[1]: self.action_wrong_answer,
+                self.curr_word.other_words[2]: self.action_wrong_answer,
+            }
+        return {}
 
     def action_correct_answer(self, message):
         self.model.bot.send_message(
             message.chat.id,
-            "Это правильный ответ, пошли дальше..."
+            "Это правильный ответ, поехали дальше...",
         )
         self.curr_word.correct_answers += 1
         self.curr_word = self.next_word
+        self.show_curr_word(message)
         self.model.actions = self.model.english_word_menu_actions
-        self.model.add_actions()
+        self.model.add_actions(self.word_actions)
 
     def action_wrong_answer(self, message):
-        pass
-
-    def btn_start_english_learning(self, message):
-        self.dictionary.nex_word_index = 0
-        word = self.dictionary.curr_word
-        self.bot.send_message(
+        self.model.bot.send_message(
             message.chat.id,
-            f"Укажите перевод слова: {word.target_word}",
-            reply_markup=keyboards.WordsKeyboard(word.words).keyboard,
+            "Это неправильный ответ... попребуем другое слово...",
         )
-        self.actions = self.english_word_menu_actions
-        self.add_actions(self.dictionary.word_actions)
-
-
-if __name__ == "__main__":
-    my_dict = Dictionary(45)
-    print(my_dict.curr_word.words)
-    print(my_dict.curr_word.words)
-    print(my_dict.curr_word.words)
+        self.curr_word.wrong_answers += 1
+        self.curr_word = self.next_word
+        self.show_curr_word(message)
+        self.model.actions = self.model.english_word_menu_actions
+        self.model.add_actions(self.word_actions)
