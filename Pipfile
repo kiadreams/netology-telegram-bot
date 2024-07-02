@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 pytelegrambotapi = "*"
 sqlalchemy = "*"
+psycopg = {extras = ["binary"], version = "*"}
 
 [dev-packages]
 

@@ -1,5 +1,6 @@
 from data import Buttons, Word
 from keyboards import DictionaryKeyboard
+
 # from model import BotModel
 
 
@@ -46,8 +47,18 @@ class Dictionary(DictionaryMenu):
             return word
         return None
 
+    @property
+    def word_actions(self) -> dict:
+        if self.curr_word is not None:
+            return {
+                self.curr_word.translate_word: self.action_correct_answer,
+                self.curr_word.other_words[0]: self.action_wrong_answer,
+                self.curr_word.other_words[1]: self.action_wrong_answer,
+                self.curr_word.other_words[2]: self.action_wrong_answer,
+            }
+        return {}
+
     def show_curr_word(self, message):
-        print(self.curr_word.target_word)
         if self.curr_word is not None:
             kb = DictionaryKeyboard().add_words_to_kb(self.curr_word.words)
             self.model.bot.send_message(
@@ -64,17 +75,6 @@ class Dictionary(DictionaryMenu):
                 reply_markup=DictionaryKeyboard().add_words_to_kb([]),
             )
 
-    @property
-    def word_actions(self) -> dict:
-        if self.curr_word is not None:
-            return {
-                self.curr_word.translate_word: self.action_correct_answer,
-                self.curr_word.other_words[0]: self.action_wrong_answer,
-                self.curr_word.other_words[1]: self.action_wrong_answer,
-                self.curr_word.other_words[2]: self.action_wrong_answer,
-            }
-        return {}
-
     def action_correct_answer(self, message):
         self.model.bot.send_message(
             message.chat.id,
@@ -83,8 +83,6 @@ class Dictionary(DictionaryMenu):
         self.curr_word.correct_answers += 1
         self.curr_word = self.next_word
         self.show_curr_word(message)
-        # self.model.actions = self.base_dictionary_actions
-        # self.model.add_actions(self.word_actions)
 
     def action_wrong_answer(self, message):
         self.model.bot.send_message(
