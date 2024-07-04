@@ -1,5 +1,5 @@
-from data import Buttons, Commands
-from keyboards import MainMenuKeyboard
+from model.data import Buttons, Commands
+from view.keyboards import MainMenuKeyboard
 
 # from model import BotModel
 

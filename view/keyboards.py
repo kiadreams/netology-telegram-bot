@@ -1,6 +1,6 @@
 from telebot import types
 
-from data import Buttons
+from model.data import Buttons
 
 
 class BaseKeyboard:

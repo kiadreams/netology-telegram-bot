@@ -1,7 +1,7 @@
-from data import Buttons, Word
-from keyboards import DictionaryKeyboard
+from model.data import Buttons, DictWord
+from view.keyboards import DictionaryKeyboard
 
-# from model import BotModel
+# from model.bot_model import BotModel
 
 
 class DictionaryMenu:
@@ -10,9 +10,9 @@ class DictionaryMenu:
         super().__init__()
         self.model = model
         self.words = [
-            Word("сумка", "bag", "backpack", "dog", "cat"),
-            Word("собака", "dog", "gosh", "bog", "cat"),
-            Word("кошка", "cat", "cut", "cot", "cattle"),
+            DictWord("сумка", "bag", "backpack", "dog", "cat"),
+            DictWord("собака", "dog", "gosh", "bog", "cat"),
+            DictWord("кошка", "cat", "cut", "cot", "cattle"),
         ]
         self.base_dictionary_actions = {
             Buttons.NEXT: self.btn_show_next_word,
@@ -34,10 +34,10 @@ class Dictionary(DictionaryMenu):
         super().__init__(model)
         self.user_id = user_id
         self.next_word_index = 0
-        self.curr_word: Word | None = self.next_word
+        self.curr_word: DictWord | None = self.next_word
 
     @property
-    def next_word(self) -> Word | None:
+    def next_word(self) -> DictWord | None:
         if self.words:
             word = self.words[self.next_word_index]
             if self.next_word_index + 2 > len(self.words):
@@ -60,7 +60,7 @@ class Dictionary(DictionaryMenu):
 
     def show_curr_word(self, message):
         if self.curr_word is not None:
-            kb = DictionaryKeyboard().add_words_to_kb(self.curr_word.words)
+            kb = DictionaryKeyboard().add_words_to_kb(self.curr_word.all_words)
             self.model.bot.send_message(
                 message.chat.id,
                 f"Переведите слово: {self.curr_word.target_word}",
@@ -94,3 +94,17 @@ class Dictionary(DictionaryMenu):
         self.show_curr_word(message)
         self.model.actions = self.base_dictionary_actions
         self.model.add_actions(self.word_actions)
+
+    def btn_show_next_word(self, message):
+        self.curr_word = self.next_word
+        self.show_curr_word(message)
+
+    def bnt_add_word_to_dict(self, message):
+        self.model.bot.send_message(
+            message.chat.id,
+            "Введите через пробел - искомое русское слово, его английский "
+            "вариант и 3 неправильных английских слова...",
+            reply_markup=DictionaryKeyboard.delete_keyboard(),
+        )
+
+    def btn_deleting_word_from_dict(self, message): ...

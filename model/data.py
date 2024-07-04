@@ -25,7 +25,7 @@ class Commands(StrEnum):
         return [elem.value for elem in Commands]
 
 
-class Word:
+class DictWord:
 
     def __init__(self, target_word: str, translate_word: str, *args) -> None:
         self.target_word = target_word
@@ -35,7 +35,7 @@ class Word:
         self.wrong_answers = 0
 
     @property
-    def words(self):
+    def all_words(self):
         word = [self.translate_word, *self.other_words]
         random.shuffle(word)
         return word

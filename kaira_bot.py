@@ -3,12 +3,18 @@ import os
 from telebot import TeleBot
 from telebot.types import Message
 
-from data import Commands
-from model import BotModel
+from database.db_model import DbModel
+from model.bot_model import BotModel
+from model.data import Commands
 
 
 bot = TeleBot(os.environ["TOKEN_KIARA_BOT"], skip_pending=True)
 root_user_id = 843771109  # from_user.id
+db = DbModel(
+    login=os.environ["LOGIN_DB"],
+    password=os.environ["PASSWORD_DB"],
+    db_name="tg_bot_db",
+)
 chats = {}
 
 
@@ -21,7 +27,10 @@ def action_of_command(message: Message):
     :return: ничего не возвращает
     """
     user_id = message.from_user.id
-    chat = chats.setdefault(message.chat.id, BotModel(bot, chats, user_id))
+    chat = chats.setdefault(
+        message.chat.id,
+        BotModel(bot, chats, user_id, db),
+    )
     chat.action_handler(message)
 
 
@@ -39,5 +48,5 @@ def action_of_button(message: Message):
 
 
 if __name__ == "__main__":
-    print("Bot is running!..")
+    print("bot is working...")
     bot.polling()
