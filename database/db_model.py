@@ -53,8 +53,8 @@ class UserWord(Base):
     correct_answers = sq.Column(sq.Integer, default=0, nullable=False)
     wrong_answers = sq.Column(sq.Integer, default=0, nullable=False)
 
-    user = relationship("User", backref="user_word", cascade="all, delete")
-    word = relationship("Word", backref="user_word", cascade="all, delete")
+    user = relationship("User", backref="user_word")
+    word = relationship("Word", backref="user_word")
 
 
 class DbModel:
@@ -106,6 +106,21 @@ class DbModel:
             ses.add_all(args)
             ses.commit()
 
+    def delete_word(self, user_id: int, dict_word: str):
+        with self.Session() as ses:
+            user_word = (
+                ses.query(UserWord)
+                .filter(
+                    sq.and_(
+                        UserWord.user_id == user_id,
+                        UserWord.target_word == dict_word,
+                    ),
+                )
+                .one()
+            )
+            ses.delete(user_word)
+            ses.commit()
+
     def update_user_word(self, user_id: int, dict_word: DictWord):
         user_word = UserWord(
             user_id=user_id,
@@ -114,6 +129,11 @@ class DbModel:
             wrong_answers=dict_word.wrong_answers,
         )
         with self.Session() as ses:
+            user_word = ses.query(UserWord).get(
+                (user_id, dict_word.target_word),
+            )
+            user_word.correct_answers = dict_word.correct_answers
+            user_word.wrong_answers = dict_word.wrong_answers
             ses.add(user_word)
             ses.commit()
 
@@ -122,7 +142,7 @@ class DbModel:
             user_words = (
                 ses.query(UserWord)
                 .join(Word)
-                .where(UserWord.user_id == user_id)
+                .filter(UserWord.user_id == user_id)
             ).all()
             dict_words = []
             for user_word in user_words:
@@ -158,10 +178,11 @@ if __name__ == "__main__":
         password=os.environ["PASSWORD_DB"],
         db_name="tg_bot_db",
     )
-    db.drop_all_table()
-    db.create_all_tables()
+    # db.drop_all_table()
+    # db.create_all_tables()
+    # db.delete_word(843771109, "КОШКА")
+    # print(db.user_word_is_exist(843771109, "КОШКА"))
 
-    print(db.user_word_is_exist(843771109, "КОШКa"))
     for word in db.get_all_user_words(843771109):
         print(
             word.target_word,

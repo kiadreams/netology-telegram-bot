@@ -2,12 +2,13 @@ from telebot import TeleBot
 
 from model.dictionary import Dictionary
 from view.main_menu import MainMenu
-
+from database.db_model import DbModel
 
 class Actions:
 
     def __init__(self):
         self.actions = {}
+        self.another_action = None
 
     @property
     def actions(self) -> dict:
@@ -15,12 +16,15 @@ class Actions:
 
     @actions.setter
     def actions(self, new_actions):
+        self.another_action = None
         self._actions = new_actions
 
     def action_handler(self, message):
         action = self._actions.get(message.text, None)
         if action is not None:
             action(message)
+        elif self.another_action is not None:
+            self.another_action(message)
 
     def add_actions(self, new_actions):
         self._actions.update(new_actions)
@@ -28,7 +32,7 @@ class Actions:
 
 class BotModel(Actions):
 
-    def __init__(self, bot: TeleBot, chats: dict, user_id: int, db_model):
+    def __init__(self, bot: TeleBot, chats: dict, user_id: int, db_model: DbModel):
         """Класс описывающий логику бота."""
         Actions.__init__(self)
         self.user_id = user_id
@@ -49,4 +53,5 @@ class BotModel(Actions):
         self.actions = self.main_menu.main_menu_actions
 
     def btn_start_english_learning(self, message):
+        self.dictionary.load_words_from_db(self.user_id)
         self.dictionary.show_curr_word(message)
