@@ -1,12 +1,15 @@
 from telebot import TeleBot
 
+from database.db_model import DbModel
 from model.dictionary import Dictionary
 from view.main_menu import MainMenu
-from database.db_model import DbModel
+
 
 class Actions:
+    """The class describes the options for the bot's actions."""
 
     def __init__(self):
+        """Set a dictionary of possible actions."""
         self.actions = {}
         self.another_action = None
 
@@ -31,27 +34,41 @@ class Actions:
 
 
 class BotModel(Actions):
+    """The class describes the functional model of the bot."""
 
-    def __init__(self, bot: TeleBot, chats: dict, user_id: int, db_model: DbModel):
-        """Класс описывающий логику бота."""
+    def __init__(
+        self,
+        bot: TeleBot,
+        chats: dict,
+        user_id: int,
+        db_model: DbModel,
+    ):
+        """Set model parameters."""
         Actions.__init__(self)
         self.user_id = user_id
         self.bot = bot
-        self.name = bot.get_my_name().name
         self.chats = chats
         self.db = db_model
-        self.main_menu = MainMenu(self)
-        self.dictionary = Dictionary(self, user_id)
-        self.actions = self.main_menu.cmd_actions
+        self.dictionary = Dictionary(self)
+        self.__main_menu = MainMenu(self)
+        self.actions = self.__main_menu.cmd_actions
+
+    @property
+    def bot_name(self):
+        return self.bot.get_my_name().name
 
     def btn_return_to_main_menu(self, message):
+        """Return to the main menu of the bot."""
         self.bot.send_message(
             message.chat.id,
             "OK",
-            reply_markup=self.main_menu.keyboard,
+            reply_markup=self.__main_menu.keyboard,
         )
-        self.actions = self.main_menu.main_menu_actions
+        self.actions = self.__main_menu.main_menu_actions
 
     def btn_start_english_learning(self, message):
-        self.dictionary.load_words_from_db(self.user_id)
+        """Start learning English words."""
+        first_name = message.from_user.first_name
+        last_name = message.from_user.last_name
+        self.dictionary.download_user_words(self.user_id, first_name, last_name)
         self.dictionary.show_curr_word(message)

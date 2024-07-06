@@ -4,15 +4,15 @@ from model.data import Buttons
 
 
 class BaseKeyboard:
-    """Базовый класс всех клавиатур клавиатуру телеграмм бота."""
+    """The base class for all keyboards."""
 
     def __init__(self, row_width=2):
-        """Инициализация базового класса Keyboard."""
+        """Set keyboard parameters."""
         self.keyboard = row_width
 
     @property
     def keyboard(self):
-        """Возвращает клавиатуру.
+        """Returns an object of the keyboard type.
 
         :return:
         """
@@ -27,14 +27,15 @@ class BaseKeyboard:
 
     @staticmethod
     def delete_keyboard():
+        """Get an empty keyboard object."""
         return types.ReplyKeyboardRemove()
 
 
 class MainMenuKeyboard(BaseKeyboard):
-    """Класс описывающий клавиатуру главного меню бота."""
+    """A class describing the keyboard of the main menu of the bot."""
 
     def __init__(self):
-        """Инициализация класса KeyboardBot."""
+        """Set the keyboard parameters of the main menu of the bot."""
         super().__init__(row_width=1)
         self.keyboard.add(
             types.KeyboardButton(Buttons.START_LEARNING),
@@ -43,12 +44,18 @@ class MainMenuKeyboard(BaseKeyboard):
 
 
 class DictionaryKeyboard(BaseKeyboard):
+    """A class describing the dictionary keyboard."""
 
     def __init__(self):
-        """Инициализация класса KeyboardBot."""
+        """Set the parameters of the bot's dictionary keyboard."""
         super().__init__(row_width=2)
 
     def add_words_to_kb(self, words: list[str]):
+        """Add buttons with words to the keyboard of the bot's dictionary.
+
+        :param words: a list of words for buttons
+        :return:
+        """
         word_buttons = [types.KeyboardButton(word) for word in words]
         return (
             self.keyboard.add(*word_buttons).row(
