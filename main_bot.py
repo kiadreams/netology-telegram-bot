@@ -8,7 +8,7 @@ from model.bot_model import BotModel
 from model.data import Commands
 
 
-bot = TeleBot(os.environ["TOKEN_KIARA_BOT"], skip_pending=True)
+bot = TeleBot(os.environ["TOKEN_BOT"], skip_pending=True)
 db_model = DbModel(
     login=os.environ["LOGIN_DB"],
     password=os.environ["PASSWORD_DB"],

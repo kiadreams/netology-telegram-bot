@@ -1,3 +1,4 @@
+import os
 from typing import Any
 
 import sqlalchemy as sq
@@ -239,12 +240,10 @@ class DbModel:
 
 
 if __name__ == "__main__":
-    import os
-
-    db = DbModel(
+    db_model = DbModel(
         login=os.environ["LOGIN_DB"],
         password=os.environ["PASSWORD_DB"],
         db_name=os.environ["DB_NAME"],
     )
-    db.drop_all_table()
-    db.create_all_tables()
+    db_model.drop_all_table()
+    db_model.create_all_tables()
