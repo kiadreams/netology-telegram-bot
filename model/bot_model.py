@@ -18,7 +18,7 @@ class Actions:
         return self._actions
 
     @actions.setter
-    def actions(self, new_actions):
+    def actions(self, new_actions: dict):
         self.another_action = None
         self._actions = new_actions
 
@@ -28,9 +28,6 @@ class Actions:
             action(message)
         elif self.another_action is not None:
             self.another_action(message)
-
-    def add_actions(self, new_actions):
-        self._actions.update(new_actions)
 
 
 class BotModel(Actions):

@@ -1,4 +1,3 @@
-import random
 from enum import StrEnum
 
 
@@ -21,43 +20,7 @@ class Commands(StrEnum):
         return [elem.value for elem in Commands]
 
 
-class DictWord:
-    """description of the word that is part of the dictionary."""
-
-    def __init__(self, target_word: str, translate_word: str, *args) -> None:
-        """Set the meaning of the target word and its variants.
-
-        :param target_word: the meaning of the target word
-        :param translate_word: translation of the target word
-        :param args: additional erroneous translations of the target word
-        """
-        self.target_word = target_word
-        self.translate_word = translate_word
-        self.other_words = args
-        self.correct_answers = 0
-        self.wrong_answers = 0
-
-    @property
-    def translation_options(self) -> list:
-        """Returns translation options."""
-        word = [self.translate_word, *self.other_words]
-        random.shuffle(word)
-        return word
-
-    @property
-    def all_words(self) -> tuple:
-        """Returns the target word and all its translation options.
-
-        :return: returns a tuple of all words in a strictly specified order
-        """
-        return (
-            self.target_word,
-            self.translate_word,
-            *self.other_words,
-        )
-
-
-class AddingWordToDictMixin:
+class ChangingDictMixin:
     """Class describing the functionality of adding words to a dictionary.
 
     The class is not intended for independent use, but only adds additional
@@ -66,69 +29,69 @@ class AddingWordToDictMixin:
 
     def __init__(self):
         """Set the target word and the meaning of its translation."""
-        self.new_target_word = None
-        self.new_translate_word = None
+        self.new_word = None
 
     def check_target_word(self, message):
-        self.new_target_word = message.text.strip().upper()
-        if self.bot_model.db.word_is_not_exist(self.new_target_word):
+        self.new_word = message.text.strip().upper()
+        if self.bot_model.db.word_is_not_exist(self.new_word):
             self.bot_model.bot.send_message(
                 message.chat.id,
-                f"Введите перевод слова       {self.new_target_word}",
+                f"Введите перевод слова       {self.new_word}\n"
+                "на английский язык 🇺🇸!",
             )
             self.bot_model.another_action = self.check_translate_word
         else:
             self.add_new_word(message)
 
     def check_translate_word(self, message):
-        self.new_translate_word = message.text.strip().upper()
-        self.bot_model.bot.send_message(
-            message.chat.id,
-            "Введите через пробел три слова, с неправильным переводом...",
-        )
-        self.bot_model.another_action = self.check_other_words
+        translate_word = message.text.strip().upper()
+        self.bot_model.db.add_word_to_db(self.new_word, translate_word)
+        self.add_new_word(message)
 
-    def check_other_words(self, message):
-        words = message.text.strip().upper().split()
-        if len(words) != 3:
-            self.bot_model.bot.send_message(
-                message.chat.id,
-                "Я не разобрал введённых слов, повторите ввод пожалуйста!\n",
-            )
-            self.check_translate_word(message)
-        else:
-            dict_word = DictWord(
-                self.new_target_word,
-                self.new_translate_word,
-                *words,
-            )
-            self.bot_model.db.add_word_to_db(dict_word.all_words)
-            self.add_new_word(message, dict_word)
-
-    def add_new_word(self, message, dict_word=None):
+    def add_new_word(self, message):
         self.bot_model.db.add_user_word_to_db(
             self.bot_model.user_id,
-            self.new_target_word,
+            self.new_word,
         )
-        if dict_word is None:
-            dict_word = self.bot_model.db.get_db_word(
-                self.new_target_word,
-            ).dict_word
-        self.words.append(dict_word)
-        count_words = len(self.words)
+        num_words = self.bot_model.db.get_num_of_user_words(
+            self.bot_model.user_id,
+        )
         self.bot_model.bot.send_message(
             message.chat.id,
-            f"Слово {self.new_target_word} добавлено для изучения...😄\n"
-            f"Теперь Вы изучаете {count_words} слов!",
+            f"Слово {self.new_word} добавлено для изучения...😄\n"
+            f"Теперь Вы изучаете {num_words} слов!",
         )
-        self.curr_word = self.next_word
+        self.next_word()
+        self.show_curr_word(message)
+
+    def delete_word_from_db(self, message) -> None:
+        word = message.text.strip().upper()
+        if self.bot_model.db.user_word_is_not_exist(
+            self.bot_model.user_id,
+            word,
+        ):
+            self.bot_model.bot.send_message(
+                message.chat.id,
+                f"Указанное слово {word} Вы не изучаете...🤷‍♂️"
+            )
+        else:
+            self.bot_model.db.delete_word(self.bot_model.user_id, word)
+            num_words = self.bot_model.db.get_num_of_user_words(
+                self.bot_model.user_id,
+            )
+            self.bot_model.bot.send_message(
+                message.chat.id,
+                f"Слово {word} удалено из Вашего словаря...👌\n"
+                f"Теперь Вы изучаете {num_words} слов! ️",
+            )
+            self.next_word()
         self.show_curr_word(message)
 
 
 class BaseWords:
     """The class describes the standard vocabulary of all users."""
 
-    cat = ("KОШКА", "CAT", "CUT", "CENTER", "COTTON")
+    cat = ("КОШКА", "CAT", "CUT", "CENTER", "COTTON")
     dog = ("СОБАКА", "DOG", "DUCK", "DAGGER", "DUKE")
     hedgehog = ("ЁЖИК", "HEDGEHOG", "HEDGE", "HOG", "HEAD")
     green = ("ЗЕЛЁНЫЙ", "GREEN", "GIRL", "GARLIC", "FAR")
@@ -163,5 +126,5 @@ class BaseWords:
     )
 
     @property
-    def base_vocabulary(self) -> list[DictWord]:
-        return [DictWord(*word) for word in BaseWords.base_words]
+    def base_vocabulary(self) -> list[tuple]:
+        return [word[:2] for word in BaseWords.base_words]

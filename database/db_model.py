@@ -1,10 +1,7 @@
 import os
-from typing import Any
 
 import sqlalchemy as sq
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
-
-from model.data import DictWord
 
 
 Base = declarative_base()
@@ -17,19 +14,9 @@ class Word(Base):
 
     target_word = sq.Column(sq.String(length=50), primary_key=True)
     translate_word = sq.Column(sq.String(length=50), nullable=False)
-    another_word1 = sq.Column(sq.String(length=50), nullable=False)
-    another_word2 = sq.Column(sq.String(length=50), nullable=False)
-    another_word3 = sq.Column(sq.String(length=50), nullable=False)
-
-    @property
-    def dict_word(self):
-        return DictWord(
-            self.target_word,
-            self.translate_word,
-            self.another_word1,
-            self.another_word2,
-            self.another_word3,
-        )
+    another_word1 = sq.Column(sq.String(length=50), nullable=True)
+    another_word2 = sq.Column(sq.String(length=50), nullable=True)
+    another_word3 = sq.Column(sq.String(length=50), nullable=True)
 
 
 class User(Base):
@@ -98,17 +85,16 @@ class DbModel:
             db_word = ses.query(Word).get(target_word)
         return db_word
 
-    def get_db_words(self, user_id: int):
+    def get_words(self, user_id: int):
         with self.Session() as ses:
-            words = ses.query(
-                Word.target_word, Word.translate_word,
-            ).join(
-                UserWord, isouter=True,
-            ).where(
-                UserWord.user_id.in_([user_id, None]),
-            ).order_by(
-                sq.func.random(),
-            ).limit(4).all()
+            words = (
+                ses.query(Word.target_word, Word.translate_word)
+                .join(UserWord, isouter=True)
+                .where(UserWord.user_id.in_([user_id, None]))
+                .order_by(sq.func.random())
+                .limit(4)
+                .all()
+            )
         return words
 
     def word_is_not_exist(self, target_word: str) -> bool:
@@ -131,6 +117,12 @@ class DbModel:
         """Check the absence of an entry in the user table."""
         with self.Session() as ses:
             is_table_empty = ses.query(UserWord).all()
+        return not is_table_empty
+
+    def words_table_is_empty(self) -> bool:
+        """Check the absence of an entry in the word table."""
+        with self.Session() as ses:
+            is_table_empty = ses.query(Word).all()
         return not is_table_empty
 
     def user_word_is_not_exist(self, user_id: int, target_word: str) -> bool:
@@ -158,18 +150,15 @@ class DbModel:
                 ses.add(user)
                 ses.commit()
 
-    def add_word_to_db(self, words: tuple[str]):
+    def add_word_to_db(self, target_word: str, translate_word: str):
         """Add a word to the word table."""
-        if self.word_is_not_exist(words[0]):
-            db_word = Word(
-                target_word=words[0],
-                translate_word=words[1],
-                another_word1=words[2],
-                another_word2=words[3],
-                another_word3=words[4],
+        if self.word_is_not_exist(target_word):
+            word = Word(
+                target_word=target_word,
+                translate_word=translate_word,
             )
             with self.Session() as ses:
-                ses.add(db_word)
+                ses.add(word)
                 ses.commit()
 
     def add_user_word_to_db(self, user_id: int, target_word: str):
@@ -193,32 +182,37 @@ class DbModel:
                 )
                 .one()
             )
-            ses.delete(user_word)
+            if user_word:
+                ses.delete(user_word)
             ses.commit()
 
-    def update_user_word(self, user_id: int, dict_word: DictWord):
+    def update_user_word(
+        self,
+        user_id: int,
+        word: str,
+        corr_answers=0,
+        wrong_answers=0,
+    ) -> None:
         """Update the entry about the specified user's word."""
         with self.Session() as ses:
             user_word = ses.query(UserWord).get(
-                (user_id, dict_word.target_word),
+                (user_id, word),
             )
-            user_word.correct_answers = dict_word.correct_answers
-            user_word.wrong_answers = dict_word.wrong_answers
+            user_word.correct_answers += corr_answers
+            user_word.wrong_answers += wrong_answers
             ses.add(user_word)
             ses.commit()
 
-    def get_all_user_words(self, user_id: int) -> list[DictWord]:
-        """Get all the words for the specified user."""
+    def get_num_of_user_words(self, user_id: int) -> int:
+        """Return the number of user's words.
+
+        :param user_id:
+        :return:
+        """
         with self.Session() as ses:
-            user_words = (
-                ses.query(UserWord)
-                .join(Word)
-                .filter(UserWord.user_id == user_id)
-            ).all()
-            dict_words = []
-            for user_word in user_words:
-                dict_words.append(self._create_dict_word(user_word))
-        return dict_words
+            number = ses.query(UserWord).count()
+            ses.commit()
+        return number
 
     def create_all_tables(self) -> None:
         Base.metadata.create_all(self.engine)
@@ -239,18 +233,6 @@ class DbModel:
         )
         return sq.create_engine(url=dsn)
 
-    @staticmethod
-    def _create_dict_word(user_word: Any) -> DictWord:
-        """Get the word object for the dictionary.
-
-        :param user_word: the object is an entry from the user's word table
-        :return:
-        """
-        dict_word: DictWord = user_word.word.dict_word
-        dict_word.correct_answers = user_word.correct_answers
-        dict_word.wrong_answers = user_word.wrong_answers
-        return dict_word
-
 
 if __name__ == "__main__":
     db_model = DbModel(
@@ -259,9 +241,9 @@ if __name__ == "__main__":
         db_name=os.environ["DB_NAME"],
     )
 
-    result = db_model.get_db_words(843_771_109)
-    print(result)
-    print(db_model.user_is_not_exist(843_771_109))
+    # result = db_model.get_words(843_771_109)
+    # print(result)
+    # print(db_model.user_is_not_exist(843_771_109))
 
-    # db_model.drop_all_table()
-    # db_model.create_all_tables()
+    db_model.drop_all_table()
+    db_model.create_all_tables()
