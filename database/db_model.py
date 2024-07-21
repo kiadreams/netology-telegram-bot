@@ -98,6 +98,19 @@ class DbModel:
             db_word = ses.query(Word).get(target_word)
         return db_word
 
+    def get_db_words(self, user_id: int):
+        with self.Session() as ses:
+            words = ses.query(
+                Word.target_word, Word.translate_word,
+            ).join(
+                UserWord, isouter=True,
+            ).where(
+                UserWord.user_id.in_([user_id, None]),
+            ).order_by(
+                sq.func.random(),
+            ).limit(4).all()
+        return words
+
     def word_is_not_exist(self, target_word: str) -> bool:
         """Check if there is no entry in the word table."""
         with self.Session() as ses:
@@ -245,5 +258,10 @@ if __name__ == "__main__":
         password=os.environ["PASSWORD_DB"],
         db_name=os.environ["DB_NAME"],
     )
-    db_model.drop_all_table()
-    db_model.create_all_tables()
+
+    result = db_model.get_db_words(843_771_109)
+    print(result)
+    print(db_model.user_is_not_exist(843_771_109))
+
+    # db_model.drop_all_table()
+    # db_model.create_all_tables()

@@ -9,6 +9,8 @@ sqlalchemy = "*"
 psycopg = {extras = ["binary"], version = "*"}
 
 [dev-packages]
+pytest = "*"
+sqlalchemy-utils = "*"
 
 [requires]
 python_version = "3.12"
