@@ -1,5 +1,5 @@
 INSERT INTO words (target_word, translate_word, another_word1, another_word2, another_word3)
-VALUES('KОШКА', 'CAT', 'CUT', 'CENTER', 'COTTON');
+VALUES('КОШКА', 'CAT', 'CUT', 'CENTER', 'COTTON');
 INSERT INTO words (target_word, translate_word, another_word1, another_word2, another_word3)
 VALUES('СОБАКА', 'DOG', 'DUCK', 'DAGGER', 'DUKE');
 INSERT INTO words (target_word, translate_word, another_word1, another_word2, another_word3)
@@ -30,13 +30,13 @@ INSERT INTO words (target_word, translate_word, another_word1, another_word2, an
 VALUES('ВЕНТИЛЯТОР', 'FAN', 'FUN', 'FONT', 'FAINT');
 
 INSERT INTO users (user_id, first_name, last_name)
-VALUES (4537415607, 'Egor', 'Gref');
+VALUES (843771109, 'Egor', 'Gref');
 
 INSERT INTO users_words (user_id, target_word, correct_answers, wrong_answers)
 VALUES(843771109, 'КОШКА', 0, 0);
 INSERT INTO users_words (user_id, target_word, correct_answers, wrong_answers)
 VALUES(843771109, 'СОБАКА', 0, 0);
 INSERT INTO users_words (user_id, target_word, correct_answers, wrong_answers)
-VALUES(843771109, 'ДОМ', 0, 0);
+VALUES(843771109, 'ДЕНЬГИ', 0, 0);
 INSERT INTO users_words (user_id, target_word, correct_answers, wrong_answers)
-VALUES(843771109, 'ЗДАНИЕ', 0, 0);
+VALUES(843771109, 'ГОРА', 0, 0);

@@ -46,6 +46,20 @@ class TestClass:
         self.model.create_all_tables()
         assert some_inspect.has_table(table_name)
 
+    @pytest.mark.parametrize(
+        "user_id, expected",
+        [(12345, False), (67894, False), (34334345, True)],
+    )
+    def test_check_users(self, user_id: int, expected: bool):
+        users = [
+            (12345, "Valera", "Korshunov"),
+            (67894, "Mihail", "Ignatovich"),
+        ]
+        for user in users:
+            self.model.add_user_to_db(*user)
+        is_exist = self.model.user_is_not_exist(user_id)
+        assert is_exist == expected
+
     @pytest.mark.parametrize("table_name", ("users", "users_words", "words"))
     def test_drop_all_tables(self, table_name):
         engine = sq.create_engine(TestClass.DSN)

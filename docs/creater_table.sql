@@ -23,9 +23,9 @@ CREATE TABLE IF NOT EXISTS Words (
     PRIMARY KEY (target_word),
     target_word    VARCHAR(50)  NOT NULL,
     translate_word VARCHAR(50)  NOT NULL,
-    another_word1  VARCHAR(50)  NOT NULL,
-    another_word2  VARCHAR(50)  NOT NULL,
-    another_word3  VARCHAR(50)  NOT NULL
+    another_word1  VARCHAR(50),
+    another_word2  VARCHAR(50),
+    another_word3  VARCHAR(50)
 );
 
 /* Table of users_words: */

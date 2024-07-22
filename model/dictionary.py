@@ -1,5 +1,6 @@
 import random
-from model.data import ChangingDictMixin, BaseWords, Buttons
+
+from model.data import BaseWords, Buttons, ChangingDictMixin
 from view.keyboards import DictionaryKeyboard
 
 
@@ -26,7 +27,6 @@ class Dictionary(ChangingDictMixin):
         else:
             self.curr_word = None
             self.words = []
-
 
     @property
     def word_actions(self) -> dict:
@@ -92,7 +92,7 @@ class Dictionary(ChangingDictMixin):
     def bnt_add_word_to_dict(self, message):
         self.bot_model.bot.send_message(
             message.chat.id,
-            "Введите 🇷🇺 слово, которое хотите добавить... ",
+            "Введите слово 🇷🇺 по-русски, которое хотите добавить... ",
             reply_markup=DictionaryKeyboard.delete_keyboard(),
         )
         self.bot_model.actions = {}
@@ -109,8 +109,8 @@ class Dictionary(ChangingDictMixin):
 
     def download_user_words(self, user_id: int, name: str, last_name: str):
         if self.bot_model.db.words_table_is_empty():
-            for words in BaseWords().base_vocabulary:
-                self.bot_model.db.add_word_to_db(*words)
+            for base_words in BaseWords().base_vocabulary:
+                self.bot_model.db.add_word_to_db(*base_words)
         if self.bot_model.db.user_is_not_exist(user_id):
             self.bot_model.db.add_user_to_db(user_id, name, last_name)
             for words in BaseWords().base_vocabulary:

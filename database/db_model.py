@@ -240,10 +240,5 @@ if __name__ == "__main__":
         password=os.environ["PASSWORD_DB"],
         db_name=os.environ["DB_NAME"],
     )
-
-    # result = db_model.get_words(843_771_109)
-    # print(result)
-    # print(db_model.user_is_not_exist(843_771_109))
-
     db_model.drop_all_table()
     db_model.create_all_tables()
